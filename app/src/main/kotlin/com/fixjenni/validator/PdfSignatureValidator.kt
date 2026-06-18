@@ -317,11 +317,11 @@ class PdfSignatureValidator(private val trustStore: TrustStore) {
         // We process the first signer (PDF typically has exactly one).
         val signerInfo: SignerInformation = signerInfos.first()
 
-        // Find the signer's certificate
         @Suppress("UNCHECKED_CAST")
-        val signerCertHolder: X509CertificateHolder? =
-            (certStore.getMatches(signerInfo.sid) as Collection<X509CertificateHolder>)
-                .firstOrNull()
+val signerCertHolder: X509CertificateHolder? =
+    (certStore.getMatches(signerInfo.sid as org.bouncycastle.util.Selector<X509CertificateHolder>)
+        as Collection<X509CertificateHolder>)
+        .firstOrNull()
 
         val signerCert: X509Certificate? = signerCertHolder?.let {
             try { certConverter.getCertificate(it) } catch (e: Exception) { null }
