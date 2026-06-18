@@ -1,6 +1,90 @@
-# Validator
+# PDF Signature Validator
 
+An **offline** Android app (Kotlin) that validates digital signatures in PDF files — similar to how Adobe Acrobat shows a signature as Verified / Not Verified. Designed specifically for Indian government PDFs such as Aadhaar cards, DigiLocker documents, and other DSC-signed PDFs.
 
+## Features
+
+- **Fully offline** — no network calls, ever. All validation happens on-device.
+- **PKCS#7 / CMS signature integrity** — detects if the document was modified after signing by verifying the ByteRange digest.
+- **Certificate chain validation** — builds and validates the chain against bundled or user-imported trusted root CAs.
+- **RFC 3161 timestamp support** — extracts cryptographically-bound signing time from embedded timestamp tokens.
+- **Certificate validity period check** — verifies the signer cert was valid at signing time.
+- **Revocation (offline)** — uses embedded LTV/DSS revocation data if present; otherwise reports "unknown (offline)".
+- **Encrypted PDF support** — detects password-protected PDFs and prompts the user for the password.
+- **User-importable trusted roots** — import `.cer`/`.crt`/`.pem`/`.der` CA certificates at runtime without rebuilding.
+- **Bundled trusted roots** — drop CA certs into `app/src/main/assets/trusted_roots/` at build time.
+
+## Tech Stack
+
+| Component | Library |
+|-----------|---------|
+| Language | Kotlin 2.0.x |
+| Build | AGP 8.5+, Gradle 8.7 |
+| PDF parsing | [PDFBox-Android](https://github.com/TomRoush/PdfBox-Android) (Apache 2.0) |
+| CMS/PKCS#7 | [Bouncy Castle](https://www.bouncycastle.org/) bcprov + bcpkix (MIT/BC) |
+| Min SDK | 26 (Android 8.0) |
+| Target SDK | 35 |
+
+## Building
+
+### Via GitHub Actions (no local PC needed)
+
+Push to any branch — the workflow at `.github/workflows/build.yml` automatically:
+1. Sets up JDK 17
+2. Installs Gradle 8.7
+3. Runs `./gradlew assembleDebug`
+4. Uploads the debug APK as a build artifact
+
+Download the APK from the **Actions** tab → latest run → **Artifacts** → `app-debug`.
+
+### Locally (optional)
+
+```bash
+./gradlew assembleDebug
+# APK: app/build/outputs/apk/debug/app-debug.apk
+```
+
+## Adding Trusted Root CAs
+
+For Indian government PDFs (Aadhaar, DigiLocker, etc.) you need the CCA India root and intermediate CA certificates:
+
+1. Download from https://cca.gov.in/root-certifying-authority.html
+2. **Option A (bundled):** Drop the `.cer`/`.crt` files into `app/src/main/assets/trusted_roots/` and rebuild.
+3. **Option B (runtime):** Tap **"Import CA Cert"** in the app and pick the certificate file.
+
+See [`app/src/main/assets/trusted_roots/README.md`](app/src/main/assets/trusted_roots/README.md) for details.
+
+## Project Structure
+
+```
+app/src/main/
+├── kotlin/com/fixjenni/validator/
+│   ├── MainActivity.kt          # UI: PDF picker, cert importer, results display
+│   ├── PdfSignatureValidator.kt # Core validation logic (ByteRange, CMS, chain)
+│   └── TrustStore.kt            # Trusted root CA management (bundled + user-imported)
+├── assets/trusted_roots/        # Drop CA certs here (see README inside)
+├── res/layout/activity_main.xml # Minimal UI layout
+└── AndroidManifest.xml
+.github/workflows/build.yml      # GitHub Actions CI — builds debug APK
+```
+
+## Validation Status Codes
+
+| Status | Meaning |
+|--------|---------|
+| `VALID` | Signature intact + chain trusted + cert valid at signing time |
+| `INVALID` | Document was modified after signing |
+| `INTACT_BUT_UNTRUSTED` | Signature intact but issuer not in trust store |
+| `INTACT_CERT_EXPIRED` | Signature intact, chain trusted, but cert was expired at signing time |
+| `ERROR` | Could not parse or process the signature |
+
+## Permissions
+
+Only SAF (Storage Access Framework) per-URI read access is used — no broad storage permissions are requested.
+
+---
+
+## Original GitLab README
 
 ## Getting started
 

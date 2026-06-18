@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PDF Signature Validator</string>
+    <string name="btn_pick_pdf">📄 Pick PDF</string>
+    <string name="btn_import_cert">🔐 Import CA Cert</string>
+    <string name="btn_clear">Clear</string>
+    <string name="hint_pick_pdf">Tap "Pick PDF" to select a PDF and validate its digital signatures.\n\nTap "Import CA Cert" to add a trusted root CA certificate (e.g. CCA India root) so the app can verify the certificate chain.\n\nAll validation is performed offline — no network calls are made.</string>
+</resources>

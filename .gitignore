@@ -1,0 +1,27 @@
+# Android build outputs
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# Build directories
+build/
+app/build/
+.gradle/
+
+# Local configuration
+local.properties
+*.keystore
+*.jks
+
+# IDE files
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Kotlin incremental compilation
+.kotlin/
+
+# Gradle cache (but NOT the wrapper jar — that must be committed)
+!gradle/wrapper/gradle-wrapper.jar
