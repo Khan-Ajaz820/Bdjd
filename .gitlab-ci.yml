@@ -6,14 +6,40 @@
 # Note that environment variables can be set in several places
 # See https://docs.gitlab.com/ci/variables/#cicd-variable-precedence
 stages:
-- test
-- secret-detection
-sast:
-  stage: test
+  - build
+  - test
+  - secret-detection
+
 include:
-- template: Security/SAST.gitlab-ci.yml
-- template: Security/Secret-Detection.gitlab-ci.yml
+  - template: Security/SAST.gitlab-ci.yml
+  - template: Security/Secret-Detection.gitlab-ci.yml
+
 variables:
   SECRET_DETECTION_ENABLED: 'true'
+
+sast:
+  stage: test
+
 secret_detection:
   stage: secret-detection
+
+# Builds the debug APK fully in the cloud (no local PC needed).
+build_apk:
+  stage: build
+  image: mingc/android-build-box:latest
+  variables:
+    GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
+  cache:
+    key: "$CI_COMMIT_REF_SLUG"
+    paths:
+      - .gradle/wrapper
+      - .gradle/caches
+  before_script:
+    - chmod +x ./gradlew
+  script:
+    - ./gradlew --no-daemon assembleDebug
+  artifacts:
+    name: "app-debug-$CI_COMMIT_SHORT_SHA"
+    paths:
+      - app/build/outputs/apk/debug/*.apk
+    expire_in: 30 days
